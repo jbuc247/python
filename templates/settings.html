@@ -1,23 +1,56 @@
 {% extends 'base.html' %}
-{% block title %}Settings{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>Settings</h2>
-  <form method="post">
-    <label>Username</label>
-    <input type="text" name="username" value="{{ user.username }}" />
-    <label>Theme</label>
-    <select name="theme">
-      <option value="dark" {% if settings.theme == 'dark' %}selected{% endif %}>Dark</option>
-      <option value="light" {% if settings.theme == 'light' %}selected{% endif %}>Light</option>
-    </select>
-    <label>Learning difficulty</label>
-    <select name="difficulty">
-      <option value="Beginner" {% if user.learning_difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
-      <option value="Intermediate" {% if user.learning_difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
-      <option value="Advanced" {% if user.learning_difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
-    </select>
-    <button type="submit" class="button">Save Settings</button>
-  </form>
-</section>
+<style>
+    .settings-layout { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+    .form-group { display:flex; flex-direction:column; gap:6px; margin-bottom:16px; }
+    .form-group label { font-weight:600; color:var(--text-muted); font-size:.9rem; }
+    .form-group input, .form-group select {
+        background:rgba(255,255,255,.07); border:1px solid var(--panel-border);
+        border-radius:8px; padding:10px 14px; color:white; font-family:inherit;
+    }
+    .form-group input:focus, .form-group select:focus { outline:none; border-color:var(--primary-color); }
+</style>
+
+<div class="settings-layout">
+    <div class="welcome-banner glass-panel">
+        <h1>⚙️ Settings</h1>
+        <p>Customize your learning experience.</p>
+    </div>
+
+    <div class="glass-panel">
+        {% if error %}
+        <div style="background:rgba(239,68,68,.12); border-left:4px solid #ef4444; color:#fca5a5; padding:10px 14px; border-radius:8px; margin-bottom:16px; font-size:.9rem;">{{ error }}</div>
+        {% endif %}
+        <form method="post">
+            <h3 style="margin-bottom:20px;">Profile</h3>
+            <div class="form-group">
+                <label>Username</label>
+                <input type="text" name="username" value="{{ user.username if user else 'Learner' }}">
+            </div>
+            <div class="form-group">
+                <label>Learning Difficulty</label>
+                <select name="difficulty">
+                    <option value="Beginner" {% if user and user.learning_difficulty == 'Beginner' %}selected{% endif %}>Beginner</option>
+                    <option value="Intermediate" {% if user and user.learning_difficulty == 'Intermediate' %}selected{% endif %}>Intermediate</option>
+                    <option value="Advanced" {% if user and user.learning_difficulty == 'Advanced' %}selected{% endif %}>Advanced</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Theme</label>
+                <select name="theme">
+                    <option value="dark" {% if settings and settings.theme == 'dark' %}selected{% endif %}>Dark</option>
+                    <option value="light" {% if settings and settings.theme == 'light' %}selected{% endif %}>Light</option>
+                </select>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;">Save Settings</button>
+        </form>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom:16px;">Environment Info</h3>
+        <div class="stat-row"><span>Server:</span><strong style="color:var(--accent-color);">Running ✓</strong></div>
+        <div class="stat-row"><span>Database:</span><strong style="color:var(--accent-color);">Connected ✓</strong></div>
+    </div>
+</div>
 {% endblock %}

@@ -3,8 +3,8 @@
 {% block content %}
 <div class="dashboard">
     <div class="welcome-banner glass-panel">
-        <h1>Welcome back, {{ user.username }}!</h1>
-        <p>You are making great progress on your Python journey.</p>
+        <h1>Welcome back, {{ user.username }}! 👋</h1>
+        <p>You are making great progress on your Python journey. Keep it up!</p>
     </div>
 
     <div class="grid-layout">
@@ -15,7 +15,7 @@
                 <div class="progress-bar" style="width: {{ course_progress }}%;"></div>
             </div>
             <p class="progress-text">{{ course_progress }}% Completed</p>
-            <button class="btn btn-primary mt-3">Continue Learning</button>
+            <a href="{{ url_for('lessons.lesson_list') }}" class="btn btn-primary mt-3" style="display:block; text-align:center; text-decoration:none;">Continue Learning →</a>
         </div>
 
         <div class="card todays-challenge glass-panel">
@@ -23,7 +23,7 @@
             <h2>{{ todays_challenge }}</h2>
             <p class="text-muted">Difficulty: Beginner</p>
             <p class="text-muted">Estimated Time: 20 mins</p>
-            <button class="btn btn-accent mt-3">Start Challenge</button>
+            <a href="{{ url_for('challenges.challenge_home') }}" class="btn btn-accent mt-3" style="display:block; text-align:center; text-decoration:none;">Start Challenge →</a>
         </div>
 
         <div class="card stats-overview glass-panel">
@@ -40,27 +40,47 @@
                 <span>Level:</span>
                 <strong>{{ user.level }}</strong>
             </div>
+            <div class="stat-row">
+                <span>XP:</span>
+                <strong>⭐ {{ user.xp }}</strong>
+            </div>
         </div>
     </div>
-    
+
     <h3 class="section-title">Quick Access</h3>
     <div class="quick-access-grid">
-        <div class="quick-card">
-            <h4>Code Playground</h4>
-            <p>Experiment with Python code</p>
-        </div>
-        <div class="quick-card">
-            <h4>My Projects</h4>
+        <a href="{{ url_for('lessons.lesson_list') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>📖 Lessons</h4>
+            <p>Continue your learning path</p>
+        </a>
+        <a href="{{ url_for('projects.workspace_home') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>💻 My Projects</h4>
             <p>Continue your personal projects</p>
-        </div>
-        <div class="quick-card">
-            <h4>Terminal</h4>
+        </a>
+        <a href="{{ url_for('terminal.terminal_home') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>🖥️ Terminal</h4>
             <p>Access the command line</p>
-        </div>
-        <div class="quick-card">
-            <h4>Weak Topics</h4>
-            <p>Review areas for improvement</p>
-        </div>
+        </a>
+        <a href="{{ url_for('quizzes.index') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>🧠 Quizzes</h4>
+            <p>Test your knowledge</p>
+        </a>
+        <a href="{{ url_for('projects.project_library') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>📦 Project Library</h4>
+            <p>Browse 100+ projects</p>
+        </a>
+        <a href="{{ url_for('challenges.challenge_home') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>🔥 Daily Challenge</h4>
+            <p>Push your limits today</p>
+        </a>
+        <a href="{{ url_for('mentor.mentor_home') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>🤖 Mentor</h4>
+            <p>Ask your AI mentor</p>
+        </a>
+        <a href="{{ url_for('progress.progress_home') }}" class="quick-card" style="text-decoration:none; color:inherit;">
+            <h4>📈 Progress</h4>
+            <p>Track your growth</p>
+        </a>
     </div>
 </div>
 {% endblock %}

@@ -1,18 +1,57 @@
 {% extends 'base.html' %}
-{% block title %}Mentor{% endblock %}
-{% block content %}
-<section class="card">
-  <h2>AI Mentor</h2>
-  <form method="post">
-    <textarea name="question" rows="3" placeholder="Ask a coding question...">Why should I use a dictionary?</textarea>
-    <button type="submit" class="button">Ask Mentor</button>
-  </form>
 
-  {% if answer %}
-    <div class="result-box">
-      <h3>Response</h3>
-      <p>{{ answer }}</p>
+{% block content %}
+<style>
+    .mentor-layout { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:24px; }
+    .chat-history { min-height:120px; }
+    .answer-box { background:rgba(59,130,246,.1); border-left:4px solid var(--primary-color); padding:16px; border-radius:8px; line-height:1.7; }
+    .input-row { display:flex; gap:12px; }
+    .input-row textarea { flex-grow:1; background:rgba(255,255,255,.07); border:1px solid var(--panel-border); border-radius:8px; padding:12px; color:white; font-family:inherit; resize:vertical; min-height:80px; }
+    .suggestion-grid { display:flex; flex-wrap:wrap; gap:10px; margin-top:8px; }
+    .suggestion-chip { background:rgba(255,255,255,.08); border:1px solid var(--panel-border); border-radius:20px; padding:6px 14px; cursor:pointer; font-size:.85rem; transition:all .2s; }
+    .suggestion-chip:hover { background:rgba(59,130,246,.3); border-color:var(--primary-color); }
+</style>
+
+<div class="mentor-layout">
+    <div class="welcome-banner glass-panel">
+        <h1>🤖 Python Mentor</h1>
+        <p>Ask me anything about Python. I'll answer based on your current level.</p>
     </div>
-  {% endif %}
-</section>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom:12px;">Quick Questions</h3>
+        <div class="suggestion-grid">
+            <div class="suggestion-chip" onclick="fillQuestion('What is a function?')">What is a function?</div>
+            <div class="suggestion-chip" onclick="fillQuestion('Why use a dictionary?')">Why use a dictionary?</div>
+            <div class="suggestion-chip" onclick="fillQuestion('How do APIs work?')">How do APIs work?</div>
+            <div class="suggestion-chip" onclick="fillQuestion('How to connect Python to SQLite?')">Python + SQLite?</div>
+            <div class="suggestion-chip" onclick="fillQuestion('What should I learn next?')">What to learn next?</div>
+            <div class="suggestion-chip" onclick="fillQuestion('Why does this code give me an error?')">Debug my code?</div>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <form method="post">
+            <label style="font-weight:600; display:block; margin-bottom:10px;">Ask your question:</label>
+            <div class="input-row">
+                <textarea name="question" id="question-input" placeholder="e.g. What is a list comprehension?">{{ request.form.get('question', '') }}</textarea>
+                <button type="submit" class="btn btn-primary" style="align-self:flex-end; padding: 12px 24px;">Ask →</button>
+            </div>
+        </form>
+
+        {% if answer %}
+        <div class="answer-box" style="margin-top:20px;">
+            <h3 style="margin-bottom:10px;">Answer:</h3>
+            <p>{{ answer }}</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
+<script>
+function fillQuestion(q) {
+    document.getElementById('question-input').value = q;
+    document.getElementById('question-input').focus();
+}
+</script>
 {% endblock %}

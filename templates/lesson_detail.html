@@ -1,15 +1,88 @@
 {% extends 'base.html' %}
-{% block title %}{{ lesson.title }}{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>{{ lesson.title }}</h2>
-  <div>{{ lesson.content|safe }}</div>
-  <form method="post">
-    <label for="exercise">Try this exercise:</label>
-    <textarea id="exercise" rows="8"># Write your code here
-# Example: create a variable named city and print it
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+
+<style>
+    .lesson-layout { display: flex; flex-direction: column; gap: 24px; max-width: 860px; margin: 0 auto; }
+    .lesson-content h2 { color: var(--primary-color); margin-bottom: 16px; }
+    .code-example { background: rgba(0,0,0,0.35); border-radius: 8px; padding: 16px; font-family: monospace; white-space: pre-wrap; border-left: 3px solid var(--primary-color); }
+    .editor-wrap { border-radius: 8px; overflow: hidden; border: 1px solid var(--panel-border); }
+    .CodeMirror { height: 280px; font-family: monospace; }
+    .output-box { display: none; margin-top: 16px; padding: 16px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; }
+    .output-box.ok  { background: rgba(16,185,129,0.12); border-left: 4px solid var(--accent-color); }
+    .output-box.err { background: rgba(239,68,68,0.12);  border-left: 4px solid #ef4444; color: #fca5a5; }
+    .nav-row { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px; }
+</style>
+
+<div class="lesson-layout">
+
+    <div class="glass-panel lesson-content">
+        <div class="nav-row" style="margin-bottom: 20px;">
+            <a href="{{ url_for('lessons.lesson_list') }}" style="color: var(--text-muted); text-decoration: none;">← All Lessons</a>
+            <span class="badge">{{ lesson.difficulty }}</span>
+        </div>
+
+        <h2>{{ lesson.title }}</h2>
+        <p style="color: var(--text-muted); margin-bottom: 24px;">{{ lesson.description }}</p>
+
+        <div>{{ lesson.content|safe }}</div>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom: 16px;">✏️ Code Editor — Try It Yourself</h3>
+        <div class="editor-wrap">
+            <textarea id="code-editor"># Write your code here
 </textarea>
-    <button type="submit" class="button">Run Code</button>
-  </form>
-</section>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+            <button id="run-btn" class="btn btn-primary">▶ Run Code</button>
+            <button id="clear-btn" class="btn" style="background:rgba(255,255,255,0.1); color:white;">Clear</button>
+        </div>
+
+        <div id="output" class="output-box"></div>
+    </div>
+
+    <div class="nav-row">
+        <a href="{{ url_for('lessons.lesson_list') }}" class="btn" style="background:rgba(255,255,255,0.1); color:white; text-decoration:none;">← Back to Lessons</a>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode: 'python', theme: 'dracula', lineNumbers: true, indentUnit: 4
+    });
+
+    document.getElementById('run-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('run-btn');
+        btn.disabled = true; btn.innerText = 'Running…';
+        const out = document.getElementById('output');
+        try {
+            const res = await fetch('/api/execute', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({code: editor.getValue()})
+            });
+            const data = await res.json();
+            out.style.display = 'block';
+            out.className = 'output-box ' + (data.success ? 'ok' : 'err');
+            out.innerText = (data.success ? (data.output || 'Code ran with no output.') : (data.error || 'An error occurred.'));
+        } catch(e) {
+            out.style.display = 'block'; out.className = 'output-box err';
+            out.innerText = 'Network error — is the server running?';
+        } finally {
+            btn.disabled = false; btn.innerText = '▶ Run Code';
+        }
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => {
+        editor.setValue(''); document.getElementById('output').style.display = 'none';
+    });
+});
+</script>
 {% endblock %}

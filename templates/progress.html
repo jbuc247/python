@@ -1,14 +1,52 @@
 {% extends 'base.html' %}
-{% block title %}Progress{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>Your Progress</h2>
-  <p>XP: {{ user.xp }}</p>
-  <p>Level: {{ user.level }}</p>
-  <p>Streak: {{ user.streak }}</p>
-  <div class="progress-bar"><span style="width: 90%"></span></div>
-  <p>Python Fundamentals: 90%</p>
-  <div class="progress-bar"><span style="width: 55%"></span></div>
-  <p>Intermediate Python: 55%</p>
-</section>
+<div style="max-width:680px; margin:0 auto; display:flex; flex-direction:column; gap:24px;">
+    <div class="welcome-banner glass-panel">
+        <h1>📈 Your Progress</h1>
+        <p>Track your learning journey across all topics.</p>
+    </div>
+
+    {% if user %}
+    <div class="glass-panel">
+        <h3 style="margin-bottom:20px;">Stats Overview</h3>
+        <div class="stat-row">
+            <span>Username:</span><strong>{{ user.username }}</strong>
+        </div>
+        <div class="stat-row">
+            <span>Level:</span><strong>{{ user.level }}</strong>
+        </div>
+        <div class="stat-row">
+            <span>Total XP:</span><strong>⭐ {{ user.xp }}</strong>
+        </div>
+        <div class="stat-row">
+            <span>Streak:</span><strong>🔥 {{ user.streak }} days</strong>
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom:20px;">Learning Progress</h3>
+        <div style="display:flex; flex-direction:column; gap:16px;">
+            <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span>Python Fundamentals</span><span>90%</span>
+                </div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width:90%;"></div></div>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span>Intermediate Python</span><span>55%</span>
+                </div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width:55%; background:var(--accent-color);"></div></div>
+            </div>
+            <div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:6px;">
+                    <span>Projects</span><span>35%</span>
+                </div>
+                <div class="progress-bar-container"><div class="progress-bar" style="width:35%; background:#f59e0b;"></div></div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
 {% endblock %}

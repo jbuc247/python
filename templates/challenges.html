@@ -1,21 +1,28 @@
 {% extends 'base.html' %}
-{% block title %}Daily Challenges{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>Daily Challenge</h2>
-  {% for challenge in challenges %}
-    <div class="lesson-item">
-      <h3>{{ challenge.title }}</h3>
-      <p><strong>Difficulty:</strong> {{ challenge.difficulty }}</p>
-      <p>{{ challenge.description }}</p>
-      <p><strong>Requirements:</strong></p>
-      <pre>{{ challenge.requirements }}</pre>
-      <p><strong>Hint:</strong> {{ challenge.hints }}</p>
-      <form method="post">
-        <textarea rows="10" name="solution"># Write your solution here</textarea>
-        <button type="submit" class="button">Submit</button>
-      </form>
+<div class="welcome-banner glass-panel" style="margin-bottom:24px;">
+    <h1>🔥 Daily Challenges</h1>
+    <p>Pick a challenge, write your solution, and get it graded!</p>
+</div>
+
+<div class="grid-layout">
+    {% for challenge in challenges %}
+    <div class="glass-panel card">
+        <h3>{{ challenge.difficulty }}</h3>
+        <h2>{{ challenge.title }}</h2>
+        <p style="color:var(--text-muted); margin:12px 0;">{{ challenge.description }}</p>
+        <a href="{{ url_for('challenges.challenge_detail', challenge_id=challenge.id) }}"
+           class="btn btn-accent"
+           style="display:block; text-align:center; text-decoration:none; margin-top:auto;">
+            Start Challenge →
+        </a>
     </div>
-  {% endfor %}
-</section>
+    {% else %}
+    <div class="glass-panel" style="text-align:center; padding:48px; grid-column:1/-1;">
+        <h2>No challenges available</h2>
+        <p style="color:var(--text-muted);">Check back soon!</p>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

@@ -1,45 +1,117 @@
 {% extends 'base.html' %}
-{% block title %}{{ project.name }}{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>{{ project.name }}</h2>
-  <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
-  <p><strong>Category:</strong> {{ project.category }}</p>
-  <p>{{ project.description }}</p>
-  <p><strong>Skills:</strong> {{ project.skills }}</p>
-  <p><strong>Requirements:</strong> {{ project.requirements }}</p>
-  <p><strong>Hints:</strong> {{ project.hints }}</p>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<style>
+    .project-layout { display:flex; flex-direction:column; gap:24px; max-width:920px; margin:0 auto; }
+    .info-section p { margin-bottom:10px; }
+    .CodeMirror { height:380px; font-family:monospace; }
+    .editor-wrap { border-radius:8px; overflow:hidden; border:1px solid var(--panel-border); }
+    .output-box { margin-top:16px; padding:16px; border-radius:8px; font-family:monospace; white-space:pre-wrap; display:none; }
+    .output-box.ok  { background:rgba(16,185,129,.12); border-left:4px solid var(--accent-color); }
+    .output-box.err { background:rgba(239,68,68,.12); border-left:4px solid #ef4444; color:#fca5a5; }
+    .score-badge { font-size:1.4rem; font-weight:700; color:var(--accent-color); }
+</style>
 
-  <form method="post">
-    <textarea name="code" rows="15"># Write your project solution here
-print("Hello from your project!")
+<div class="project-layout">
+    <div class="glass-panel info-section">
+        <a href="{{ url_for('projects.project_library') }}" style="color:var(--text-muted);text-decoration:none;">← Project Library</a>
+        <h1 style="color:var(--primary-color); margin:16px 0 8px;">{{ project.name }}</h1>
+        <p><span class="badge">{{ project.difficulty }}</span> &nbsp; {{ project.category }}</p>
+
+        <p style="margin-top:16px;">{{ project.description }}</p>
+
+        <h3 style="margin-top:20px;">Requirements</h3>
+        <p>{{ project.requirements }}</p>
+
+        <h3 style="margin-top:20px;">Skills You'll Practice</h3>
+        <p>{{ project.skills }}</p>
+
+        <h3 style="margin-top:20px;">💡 Hints</h3>
+        <p style="background:rgba(59,130,246,.1);padding:12px;border-radius:8px;border-left:4px solid var(--primary-color);">{{ project.hints }}</p>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom:16px;">Your Solution</h3>
+        <div class="editor-wrap">
+            <textarea id="code-editor"># Write your project solution here
+print("Hello from my project!")
 </textarea>
-    <button type="submit" class="button">Run Project</button>
-  </form>
+        </div>
 
-  {% if result %}
-    <div class="result-box">
-      <h3>Evaluation</h3>
-      <p>Score: {{ result.score }}/{{ result.total }}</p>
-      <ul>
-        {% for item in result.checks %}
-          <li>{{ item }}</li>
-        {% endfor %}
-      </ul>
-    </div>
-  {% endif %}
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+            <button id="run-btn" class="btn btn-primary">▶ Run Code</button>
+            <button id="submit-btn" class="btn btn-accent">✓ Submit & Grade</button>
+            <button id="clear-btn" class="btn" style="background:rgba(255,255,255,.1);color:white;">Clear</button>
+        </div>
 
-  {% if execution %}
-    <div class="result-box">
-      <h3>Execution</h3>
-      {% if execution.success %}
-        <p>Program Output:</p>
-        <pre>{{ execution.output }}</pre>
-      {% else %}
-        <p>Program Error:</p>
-        <pre>{{ execution.error }}</pre>
-      {% endif %}
+        <div id="output" class="output-box"></div>
+
+        {% if result %}
+        <div class="output-box ok" style="display:block; margin-top:24px;">
+            <h3>Evaluation Result</h3>
+            <p class="score-badge">Score: {{ result.score }} / {{ result.total }}</p>
+            <ul style="margin-top:12px; margin-left:20px;">
+                {% for item in result.checks %}<li>{{ item }}</li>{% endfor %}
+            </ul>
+            <p style="margin-top:12px; color:var(--text-muted);">{{ result.summary }}</p>
+        </div>
+        {% endif %}
+
+        {% if execution %}
+        <div class="output-box {{ 'ok' if execution.success else 'err' }}" style="display:block; margin-top:16px;">
+            <strong>{{ 'Output:' if execution.success else 'Error:' }}</strong>
+            <pre style="margin-top:8px;">{{ execution.output if execution.success else execution.error }}</pre>
+        </div>
+        {% endif %}
     </div>
-  {% endif %}
-</section>
+
+    <div>
+        <h3 style="margin-bottom:12px;">Extension Ideas</h3>
+        <div class="glass-panel">
+            <p>{{ project.extension_ideas }}</p>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode:'python', theme:'dracula', lineNumbers:true, indentUnit:4
+    });
+    const out = document.getElementById('output');
+
+    document.getElementById('run-btn').addEventListener('click', async () => {
+        const btn = document.getElementById('run-btn');
+        btn.disabled = true; btn.innerText = 'Running…';
+        try {
+            const res = await fetch('/api/execute', {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({code: editor.getValue()})
+            });
+            const data = await res.json();
+            out.style.display = 'block';
+            out.className = 'output-box ' + (data.success ? 'ok' : 'err');
+            out.innerText = data.success ? (data.output || 'No output.') : (data.error || 'Error.');
+        } catch(e) { out.style.display='block'; out.className='output-box err'; out.innerText='Network error.'; }
+        finally { btn.disabled=false; btn.innerText='▶ Run Code'; }
+    });
+
+    document.getElementById('submit-btn').addEventListener('click', () => {
+        // Build a form and POST it to the current URL
+        const form = document.createElement('form');
+        form.method = 'POST';
+        const ta = document.createElement('textarea');
+        ta.name = 'code'; ta.value = editor.getValue();
+        form.appendChild(ta);
+        document.body.appendChild(form);
+        form.submit();
+    });
+
+    document.getElementById('clear-btn').addEventListener('click', () => { editor.setValue(''); out.style.display='none'; });
+});
+</script>
 {% endblock %}

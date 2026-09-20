@@ -1,14 +1,28 @@
 {% extends 'base.html' %}
-{% block title %}Lessons{% endblock %}
+
 {% block content %}
-<section class="card">
-  <h2>Learning Path</h2>
-  {% for lesson in lessons %}
-    <div class="lesson-item">
-      <h3>{{ lesson.title }}</h3>
-      <p>{{ lesson.description }}</p>
-      <a href="{{ url_for('lessons.lesson_detail', slug=lesson.slug) }}" class="button">Open Lesson</a>
+<div class="welcome-banner glass-panel" style="margin-bottom: 24px;">
+    <h1>📚 Learning Path</h1>
+    <p>Work through each lesson in order. Complete exercises to earn XP and unlock the next topic.</p>
+</div>
+
+<div class="grid-layout">
+    {% for lesson in lessons %}
+    <div class="glass-panel card" style="position: relative;">
+        <h3>{{ lesson.category }} &bull; {{ lesson.difficulty }}</h3>
+        <h2>{{ lesson.title }}</h2>
+        <p style="color: var(--text-muted); margin: 12px 0;">{{ lesson.description }}</p>
+        <a href="{{ url_for('lessons.lesson_detail', slug=lesson.slug) }}"
+           class="btn btn-primary"
+           style="display:block; text-align:center; text-decoration:none; margin-top: auto;">
+            Open Lesson →
+        </a>
     </div>
-  {% endfor %}
-</section>
+    {% else %}
+    <div class="glass-panel" style="text-align:center; padding: 48px;">
+        <h2>No lessons found</h2>
+        <p style="color: var(--text-muted);">The lesson database may not have been seeded yet.</p>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}

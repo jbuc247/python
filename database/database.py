@@ -219,5 +219,12 @@ def init_database():
         )
 
         conn.commit()
+
+        # --- Migrations for existing databases created before auth was added ---
+        existing_cols = {row["name"] for row in conn.execute("PRAGMA table_info(users)").fetchall()}
+        if "password_hash" not in existing_cols:
+            conn.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
+        conn.execute("CREATE UNIQUE INDEX IF NOT EXISTS idx_users_username ON users(username)")
+        conn.commit()
     finally:
         conn.close()

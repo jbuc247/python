@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, redirect, request, session, url_for
 
 from database.database import get_connection
-from services.progress import ensure_user_exists, get_user
+from services.progress import get_user
 
 
 dashboard_bp = Blueprint("dashboard", __name__)
@@ -9,15 +9,16 @@ dashboard_bp = Blueprint("dashboard", __name__)
 
 @dashboard_bp.route("/dashboard")
 def dashboard_home():
-    ensure_user_exists()
     user = get_user()
+    user_id = session["user_id"]
     conn = get_connection()
     try:
         challenge = conn.execute(
             "SELECT * FROM daily_challenges ORDER BY id LIMIT 1"
         ).fetchone()
         projects_completed = conn.execute(
-            "SELECT COUNT(*) FROM project_attempts WHERE user_id = 1 AND status = 'completed'"
+            "SELECT COUNT(*) FROM project_attempts WHERE user_id = ? AND status = 'completed'",
+            (user_id,),
         ).fetchone()[0]
         projects_total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
     finally:
@@ -44,6 +45,14 @@ def dashboard_home():
 def assessment():
     if request.method == "POST":
         session["assessment_done"] = True
+        conn = get_connection()
+        try:
+            conn.execute(
+                "UPDATE users SET assessment_done = 1 WHERE id = ?", (session["user_id"],)
+            )
+            conn.commit()
+        finally:
+            conn.close()
         return redirect(url_for("dashboard.dashboard_home"))
 
     questions = [
