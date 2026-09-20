@@ -1,0 +1,124 @@
+================================================================
+  PYTHON LEARNING LAB — GIT PUSH GUIDE (TERMUX)
+================================================================
+
+GITHUB REPO: https://github.com/jbuc247/python
+
+
+================================================================
+  ONE-TIME SETUP (do this once in Termux)
+================================================================
+
+1. Set your Git identity:
+
+   git config --global user.name "Your Name"
+   git config --global user.email "your@email.com"
+
+2. Save your GitHub credentials so you don't retype every time:
+
+   git config --global credential.helper store
+
+   Then do one push and enter your username + token when asked.
+   It will be saved permanently after that.
+
+3. GitHub Personal Access Token (PAT):
+   - Go to: https://github.com/settings/tokens
+   - Click: Generate new token (classic)
+   - Select scope: repo (check the box)
+   - Copy the token
+   - Use the token as your PASSWORD when Git asks for it
+
+
+================================================================
+  EVERY TIME YOU MAKE CHANGES
+================================================================
+
+Step 1 — Navigate to the project folder:
+
+   cd ~/python_learning_lab
+
+Step 2 — Check what files you changed:
+
+   git status
+
+Step 3 — Stage all changed files:
+
+   git add -A
+
+   OR stage specific files only:
+
+   git add routes/dashboard.py templates/lesson.html
+
+Step 4 — Commit with a short description:
+
+   git commit -m "Fix: dashboard buttons now work"
+
+Step 5 — Push to GitHub:
+
+   git push origin master
+
+
+================================================================
+  QUICK EXAMPLE (copy and paste)
+================================================================
+
+   cd ~/python_learning_lab
+   git add -A
+   git commit -m "My changes"
+   git push origin master
+
+
+================================================================
+  PULL UPDATES FROM PC TO TERMUX
+================================================================
+
+If you edited files on your PC and want them in Termux:
+
+   cd ~/python_learning_lab
+   git pull origin master
+
+
+================================================================
+  START THE APP AFTER PULLING
+================================================================
+
+   cd ~/python_learning_lab
+   source venv/bin/activate
+   python app.py
+
+   Then open in Chrome: http://127.0.0.1:5000
+
+
+================================================================
+  USEFUL GIT COMMANDS
+================================================================
+
+   git status              — see what changed
+   git log --oneline -5    — see last 5 commits
+   git diff                — see exact line changes
+   git add -A              — stage all changes
+   git add filename        — stage one file
+   git commit -m "msg"     — commit with message
+   git push origin master  — push to GitHub
+   git pull origin master  — pull from GitHub
+   git restore filename    — undo changes to a file
+
+
+================================================================
+  TROUBLESHOOTING
+================================================================
+
+Problem: "Permission denied" or "Authentication failed"
+Fix:     Use your Personal Access Token as password, not your
+         GitHub login password.
+
+Problem: "Updates were rejected"
+Fix:     Pull first then push:
+         git pull origin master
+         git push origin master
+
+Problem: "Not a git repository"
+Fix:     Make sure you are in the right folder:
+         cd ~/python_learning_lab
+
+================================================================
