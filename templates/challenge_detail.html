@@ -1,0 +1,91 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<style>
+    .challenge-layout { display:flex; flex-direction:column; gap:24px; max-width:900px; margin:0 auto; }
+    .req-list li { margin-bottom:8px; color:var(--text-muted); }
+    .CodeMirror { height:350px; font-family:monospace; }
+    .editor-wrap { border-radius:8px; overflow:hidden; border:1px solid var(--panel-border); }
+    .output-box { margin-top:16px; padding:16px; border-radius:8px; font-family:monospace; white-space:pre-wrap; display:none; }
+    .output-box.ok  { background:rgba(16,185,129,.12); border-left:4px solid var(--accent-color); }
+    .output-box.err { background:rgba(239,68,68,.12); border-left:4px solid #ef4444; color:#fca5a5; }
+    .hint-box { background:rgba(59,130,246,.1); border-left:4px solid var(--primary-color); padding:12px 16px; border-radius:4px; margin-top:16px; }
+</style>
+
+<div class="challenge-layout">
+    <div class="glass-panel">
+        <a href="{{ url_for('challenges.challenge_home') }}" style="color:var(--text-muted);text-decoration:none;">← All Challenges</a>
+        <h1 style="color:var(--primary-color); margin:16px 0 8px;">{{ challenge.title }}</h1>
+        <p><span class="badge">{{ challenge.difficulty }}</span></p>
+        <p style="margin-top:16px;">{{ challenge.description }}</p>
+
+        <h3 style="margin-top:24px;">Requirements:</h3>
+        <ul class="req-list" style="margin-left:20px; margin-top:8px;">
+            {% for line in challenge.requirements.strip().split('\n') %}
+                {% if line.strip() %}<li>{{ line.strip() }}</li>{% endif %}
+            {% endfor %}
+        </ul>
+
+        <div class="hint-box">
+            <strong>💡 Hint:</strong> {{ challenge.hints }}
+        </div>
+    </div>
+
+    <div class="glass-panel">
+        <h3 style="margin-bottom:16px;">Your Solution</h3>
+        <div class="editor-wrap">
+            <textarea id="code-editor"># Write your solution here
+</textarea>
+        </div>
+
+        <div style="display:flex; gap:12px; margin-top:16px; flex-wrap:wrap;">
+            <button id="run-btn" class="btn btn-primary">▶ Run Only</button>
+            <button id="submit-btn" class="btn btn-accent">✓ Submit Solution</button>
+            <button id="clear-btn" class="btn" style="background:rgba(255,255,255,.1);color:white;">Clear</button>
+        </div>
+
+        <div id="output" class="output-box"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+        mode:'python', theme:'dracula', lineNumbers:true, indentUnit:4
+    });
+    const out = document.getElementById('output');
+
+    async function runCode(submit) {
+        const btn = submit ? document.getElementById('submit-btn') : document.getElementById('run-btn');
+        const orig = btn.innerText;
+        btn.disabled = true; btn.innerText = 'Running…';
+        try {
+            const res = await fetch('/api/execute', {
+                method:'POST',
+                headers:{'Content-Type':'application/json'},
+                body: JSON.stringify({code: editor.getValue()})
+            });
+            const data = await res.json();
+            out.style.display = 'block';
+            out.className = 'output-box ' + (data.success ? 'ok' : 'err');
+            if (submit && data.success) {
+                out.innerText = '✓ Solution submitted!\n\nOutput:\n' + (data.output || 'No output');
+            } else {
+                out.innerText = (data.success ? (data.output || 'No output.') : (data.error || 'Error.'));
+            }
+        } catch(e) {
+            out.style.display = 'block'; out.className = 'output-box err';
+            out.innerText = 'Network error.';
+        } finally { btn.disabled = false; btn.innerText = orig; }
+    }
+
+    document.getElementById('run-btn').addEventListener('click', () => runCode(false));
+    document.getElementById('submit-btn').addEventListener('click', () => runCode(true));
+    document.getElementById('clear-btn').addEventListener('click', () => { editor.setValue(''); out.style.display='none'; });
+});
+</script>
+{% endblock %}

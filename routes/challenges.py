@@ -12,3 +12,17 @@ def challenge_home():
     finally:
         conn.close()
     return render_template("challenges.html", challenges=challenges)
+
+
+@challenges_bp.route("/challenges/<int:challenge_id>")
+def challenge_detail(challenge_id):
+    conn = get_connection()
+    try:
+        challenge = conn.execute(
+            "SELECT * FROM daily_challenges WHERE id = ?", (challenge_id,)
+        ).fetchone()
+    finally:
+        conn.close()
+    if not challenge:
+        return "Challenge not found", 404
+    return render_template("challenge_detail.html", challenge=challenge)
