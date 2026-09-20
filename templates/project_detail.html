@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>{{ project.name }}</h2>
+  <p><strong>Difficulty:</strong> {{ project.difficulty }}</p>
+  <p><strong>Category:</strong> {{ project.category }}</p>
+  <p>{{ project.description }}</p>
+  <p><strong>Skills:</strong> {{ project.skills }}</p>
+  <p><strong>Requirements:</strong> {{ project.requirements }}</p>
+  <p><strong>Hints:</strong> {{ project.hints }}</p>
+
+  <form method="post">
+    <textarea name="code" rows="15"># Write your project solution here
+print("Hello from your project!")
+</textarea>
+    <button type="submit" class="button">Run Project</button>
+  </form>
+
+  {% if result %}
+    <div class="result-box">
+      <h3>Evaluation</h3>
+      <p>Score: {{ result.score }}/{{ result.total }}</p>
+      <ul>
+        {% for item in result.checks %}
+          <li>{{ item }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  {% endif %}
+
+  {% if execution %}
+    <div class="result-box">
+      <h3>Execution</h3>
+      {% if execution.success %}
+        <p>Program Output:</p>
+        <pre>{{ execution.output }}</pre>
+      {% else %}
+        <p>Program Error:</p>
+        <pre>{{ execution.error }}</pre>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>
+{% endblock %}

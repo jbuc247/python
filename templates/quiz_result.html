@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+{% block title %}Quiz Results{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Quiz Complete</h2>
+  <p>Score: {{ result.correct }}/{{ result.total }}</p>
+  <p>Correct: {{ result.correct }} | Wrong: {{ result.wrong }}</p>
+  <p>Percentage: {{ result.percentage }}%</p>
+  {% if result.explanations %}
+    <h3>Topics to review:</h3>
+    <ul>
+      {% for item in result.explanations %}
+        <li>{{ item.question }} — {{ item.explanation }}</li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+  <a href="{{ url_for('quizzes.quiz_home') }}" class="button">Back to Quizzes</a>
+</section>
+{% endblock %}

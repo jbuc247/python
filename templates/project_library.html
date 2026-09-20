@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}Project Library{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Project Library</h2>
+  <div class="project-grid">
+    {% for project in projects %}
+      <div class="project-card">
+        <h3>{{ project.name }}</h3>
+        <p>{{ project.difficulty }}</p>
+        <p>{{ project.category }}</p>
+        <p>{{ project.description }}</p>
+        <a href="{{ url_for('projects.project_detail', slug=project.slug) }}" class="button">View Project</a>
+      </div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

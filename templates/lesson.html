@@ -1,0 +1,158 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<style>
+    .lesson-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    .lesson-content {
+        padding: 32px;
+    }
+    .lesson-content h2 {
+        margin-bottom: 16px;
+        color: var(--primary-color);
+    }
+    .lesson-section {
+        margin-bottom: 24px;
+    }
+    .lesson-section h3 {
+        font-size: 1.1rem;
+        margin-bottom: 8px;
+        color: var(--text-muted);
+    }
+    .code-example {
+        background: rgba(0,0,0,0.3);
+        padding: 16px;
+        border-radius: 8px;
+        font-family: monospace;
+        white-space: pre-wrap;
+    }
+    .editor-container {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+    }
+    .CodeMirror {
+        height: 300px;
+        font-family: 'Fira Code', monospace, Courier, sans-serif;
+    }
+    .action-bar {
+        display: flex;
+        gap: 12px;
+        margin-top: 16px;
+    }
+    .output-panel {
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 16px;
+        border-radius: 8px;
+        min-height: 100px;
+        font-family: monospace;
+        white-space: pre-wrap;
+        margin-top: 16px;
+        border: 1px solid var(--panel-border);
+        display: none;
+    }
+    .output-panel.success {
+        border-left: 4px solid var(--accent-color);
+    }
+    .output-panel.error {
+        border-left: 4px solid #ef4444;
+        color: #fca5a5;
+    }
+</style>
+
+<div class="lesson-container">
+    <div class="glass-panel lesson-content">
+        <h2>{{ lesson.title }}</h2>
+        
+        <div class="lesson-section">
+            <h3>Concept</h3>
+            <p>{{ lesson.concept }}</p>
+        </div>
+        
+        <div class="lesson-section">
+            <h3>Example</h3>
+            <div class="code-example">{{ lesson.example }}</div>
+        </div>
+        
+        <div class="lesson-section">
+            <h3>Now you try</h3>
+            <p>{{ lesson.exercise }}</p>
+        </div>
+    </div>
+    
+    <div class="glass-panel">
+        <div class="editor-container">
+            <textarea id="code-editor">{{ lesson.starting_code }}</textarea>
+        </div>
+        
+        <div class="action-bar">
+            <button id="run-btn" class="btn btn-primary">Run Code</button>
+            <button id="clear-btn" class="btn">Clear</button>
+        </div>
+        
+        <div id="output" class="output-panel"></div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: 'python',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true
+        });
+        
+        const runBtn = document.getElementById('run-btn');
+        const clearBtn = document.getElementById('clear-btn');
+        const outputPanel = document.getElementById('output');
+        
+        runBtn.addEventListener('click', async () => {
+            const code = editor.getValue();
+            runBtn.disabled = true;
+            runBtn.innerText = 'Running...';
+            
+            try {
+                const response = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                const result = await response.json();
+                
+                outputPanel.style.display = 'block';
+                outputPanel.className = 'output-panel ' + (result.success ? 'success' : 'error');
+                
+                if (result.success) {
+                    outputPanel.innerText = result.stdout || 'Code executed successfully with no output.';
+                } else {
+                    outputPanel.innerText = result.stderr || 'An error occurred.';
+                }
+            } catch (error) {
+                outputPanel.style.display = 'block';
+                outputPanel.className = 'output-panel error';
+                outputPanel.innerText = 'Network error while executing code.';
+            } finally {
+                runBtn.disabled = false;
+                runBtn.innerText = 'Run Code';
+            }
+        });
+        
+        clearBtn.addEventListener('click', () => {
+            editor.setValue('');
+            outputPanel.style.display = 'none';
+        });
+    });
+</script>
+{% endblock %}

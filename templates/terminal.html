@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+    .terminal-container {
+        display: flex;
+        flex-direction: column;
+        height: calc(100vh - 120px);
+        background: #000;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        overflow: hidden;
+        font-family: 'Fira Code', monospace, Courier, sans-serif;
+    }
+    .terminal-header {
+        background: rgba(255,255,255,0.1);
+        padding: 8px 16px;
+        color: var(--text-muted);
+        font-size: 0.9rem;
+        display: flex;
+        justify-content: space-between;
+    }
+    .terminal-body {
+        flex-grow: 1;
+        padding: 16px;
+        overflow-y: auto;
+        color: #d4d4d4;
+    }
+    .terminal-line {
+        margin-bottom: 4px;
+        white-space: pre-wrap;
+    }
+    .terminal-prompt {
+        color: var(--accent-color);
+        margin-right: 8px;
+    }
+    .terminal-input-line {
+        display: flex;
+        margin-top: 8px;
+    }
+    .terminal-input {
+        background: transparent;
+        border: none;
+        color: #fff;
+        font-family: inherit;
+        font-size: inherit;
+        flex-grow: 1;
+        outline: none;
+    }
+</style>
+
+<div class="glass-panel" style="padding: 0;">
+    <div class="terminal-container" id="terminal" data-cwd="{{ default_dir }}">
+        <div class="terminal-header">
+            <span>Terminal</span>
+            <span>Local Environment</span>
+        </div>
+        <div class="terminal-body" id="terminal-body">
+            <div class="terminal-line" style="color: var(--primary-color);">Welcome to Python Learning Lab Terminal!</div>
+            <div class="terminal-line" style="color: var(--text-muted);">Type 'help' for available commands.</div>
+            
+            <div id="output-history"></div>
+            
+            <div class="terminal-input-line">
+                <span class="terminal-prompt" id="prompt-dir">{{ default_dir }} $</span>
+                <input type="text" class="terminal-input" id="terminal-input" autocomplete="off" spellcheck="false" autofocus>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const input = document.getElementById('terminal-input');
+        const outputHistory = document.getElementById('output-history');
+        const terminal = document.getElementById('terminal');
+        const promptDir = document.getElementById('prompt-dir');
+        const terminalBody = document.getElementById('terminal-body');
+        
+        let commandHistory = [];
+        let historyIndex = -1;
+        
+        input.addEventListener('keydown', async (e) => {
+            if (e.key === 'Enter') {
+                const command = input.value;
+                const currentCwd = terminal.dataset.cwd;
+                
+                input.value = '';
+                
+                if (command.trim()) {
+                    commandHistory.push(command);
+                    historyIndex = commandHistory.length;
+                    
+                    // Echo command
+                    const cmdDiv = document.createElement('div');
+                    cmdDiv.className = 'terminal-line';
+                    cmdDiv.innerHTML = `<span class="terminal-prompt">${currentCwd} $</span>${command}`;
+                    outputHistory.appendChild(cmdDiv);
+                    
+                    // Execute command
+                    if (command.trim().toLowerCase() === 'clear') {
+                        outputHistory.innerHTML = '';
+                    } else if (command.trim().toLowerCase() === 'help') {
+                        const outDiv = document.createElement('div');
+                        outDiv.className = 'terminal-line';
+                        outDiv.innerText = "Basic shell commands work here (ls, cd, pwd, python, pip).\nNote: This is a stateless shell for execution, so state like environment variables won't persist across commands except for 'cd'.";
+                        outputHistory.appendChild(outDiv);
+                    } else {
+                        try {
+                            const res = await fetch('{{ url_for("terminal.terminal_execute") }}', {
+                                method: 'POST',
+                                headers: {'Content-Type': 'application/json'},
+                                body: JSON.stringify({command: command, cwd: currentCwd})
+                            });
+                            
+                            const data = await res.json();
+                            
+                            if (data.output) {
+                                const outDiv = document.createElement('div');
+                                outDiv.className = 'terminal-line';
+                                outDiv.innerText = data.output;
+                                outputHistory.appendChild(outDiv);
+                            }
+                            
+                            // Update CWD if it changed
+                            terminal.dataset.cwd = data.cwd;
+                            promptDir.innerText = data.cwd + ' $';
+                            
+                        } catch (err) {
+                            const errDiv = document.createElement('div');
+                            errDiv.className = 'terminal-line';
+                            errDiv.style.color = '#ef4444';
+                            errDiv.innerText = 'Network error while executing command.';
+                            outputHistory.appendChild(errDiv);
+                        }
+                    }
+                }
+                
+                // Scroll to bottom
+                terminalBody.scrollTop = terminalBody.scrollHeight;
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (historyIndex > 0) {
+                    historyIndex--;
+                    input.value = commandHistory[historyIndex];
+                }
+            } else if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (historyIndex < commandHistory.length - 1) {
+                    historyIndex++;
+                    input.value = commandHistory[historyIndex];
+                } else {
+                    historyIndex = commandHistory.length;
+                    input.value = '';
+                }
+            }
+        });
+        
+        // Keep focus on input when clicking terminal
+        terminalBody.addEventListener('click', () => {
+            input.focus();
+        });
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+{% block title %}{{ quiz.title }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>{{ quiz.title }}</h2>
+  <form method="post">
+    {% for question in questions %}
+      <div class="question-box">
+        <p>{{ loop.index }}. {{ question.question }}</p>
+        {% for option in question.options.split(' | ') %}
+          <label><input type="radio" name="{{ loop.parent.index0 }}" value="{{ option }}"> {{ option }}</label><br>
+        {% endfor %}
+      </div>
+    {% endfor %}
+    <button type="submit" class="button">Submit Quiz</button>
+  </form>
+</section>
+{% endblock %}

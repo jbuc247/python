@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="quizzes-container">
+    <div class="welcome-banner glass-panel">
+        <h1>Quizzes</h1>
+        <p>Test your knowledge and earn XP!</p>
+    </div>
+
+    <div class="grid-layout">
+        {% for quiz in quizzes %}
+        <div class="card glass-panel">
+            <h3>{{ quiz.difficulty }}</h3>
+            <h2>{{ quiz.title }}</h2>
+            <div class="stat-row">
+                <span>Questions:</span>
+                <strong>{{ quiz.questions }}</strong>
+            </div>
+            <a href="{{ url_for('quizzes.view_quiz', quiz_id=quiz.id) }}" class="btn btn-primary mt-3" style="text-align: center; text-decoration: none;">Take Quiz</a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

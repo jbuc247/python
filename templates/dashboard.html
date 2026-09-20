@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="dashboard">
+    <div class="welcome-banner glass-panel">
+        <h1>Welcome back, {{ user.username }}!</h1>
+        <p>You are making great progress on your Python journey.</p>
+    </div>
+
+    <div class="grid-layout">
+        <div class="card current-course glass-panel">
+            <h3>Current Course</h3>
+            <h2>{{ current_course }}</h2>
+            <div class="progress-bar-container">
+                <div class="progress-bar" style="width: {{ course_progress }}%;"></div>
+            </div>
+            <p class="progress-text">{{ course_progress }}% Completed</p>
+            <button class="btn btn-primary mt-3">Continue Learning</button>
+        </div>
+
+        <div class="card todays-challenge glass-panel">
+            <h3>Today's Challenge</h3>
+            <h2>{{ todays_challenge }}</h2>
+            <p class="text-muted">Difficulty: Beginner</p>
+            <p class="text-muted">Estimated Time: 20 mins</p>
+            <button class="btn btn-accent mt-3">Start Challenge</button>
+        </div>
+
+        <div class="card stats-overview glass-panel">
+            <h3>Overview</h3>
+            <div class="stat-row">
+                <span>Projects Completed:</span>
+                <strong>{{ projects_completed }} / {{ projects_total }}</strong>
+            </div>
+            <div class="stat-row">
+                <span>Quiz Average:</span>
+                <strong>{{ quiz_average }}%</strong>
+            </div>
+            <div class="stat-row">
+                <span>Level:</span>
+                <strong>{{ user.level }}</strong>
+            </div>
+        </div>
+    </div>
+    
+    <h3 class="section-title">Quick Access</h3>
+    <div class="quick-access-grid">
+        <div class="quick-card">
+            <h4>Code Playground</h4>
+            <p>Experiment with Python code</p>
+        </div>
+        <div class="quick-card">
+            <h4>My Projects</h4>
+            <p>Continue your personal projects</p>
+        </div>
+        <div class="quick-card">
+            <h4>Terminal</h4>
+            <p>Access the command line</p>
+        </div>
+        <div class="quick-card">
+            <h4>Weak Topics</h4>
+            <p>Review areas for improvement</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

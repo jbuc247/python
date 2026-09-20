@@ -1,0 +1,212 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<style>
+    .workspace-layout {
+        display: flex;
+        gap: 24px;
+        height: calc(100vh - 120px);
+    }
+    .file-explorer {
+        width: 250px;
+        display: flex;
+        flex-direction: column;
+    }
+    .file-list {
+        margin-top: 16px;
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .file-item, .project-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 4px;
+    }
+    .file-item:hover, .project-item:hover {
+        background: rgba(255,255,255,0.1);
+    }
+    .file-item.active {
+        background: rgba(59, 130, 246, 0.2);
+        border-left: 3px solid var(--primary-color);
+    }
+    .editor-section {
+        flex-grow: 1;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .editor-container {
+        flex-grow: 1;
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+        display: flex;
+        flex-direction: column;
+    }
+    .CodeMirror {
+        flex-grow: 1;
+        font-family: 'Fira Code', monospace, Courier, sans-serif;
+    }
+    .output-panel {
+        height: 200px;
+        background: #1e1e1e;
+        color: #d4d4d4;
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--panel-border);
+        overflow-y: auto;
+        font-family: monospace;
+        white-space: pre-wrap;
+    }
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(0,0,0,0.2);
+        padding: 8px 16px;
+        border-bottom: 1px solid var(--panel-border);
+    }
+</style>
+
+<div class="workspace-layout">
+    <div class="glass-panel file-explorer">
+        <h3>My Projects</h3>
+        <button id="new-project-btn" class="btn btn-primary" style="margin-top: 12px; width: 100%;">+ New Project</button>
+        
+        <div class="file-list" id="project-list">
+            {% for project in projects %}
+            <div class="project-item" data-project="{{ project }}">📁 {{ project }}</div>
+            {% endfor %}
+        </div>
+        
+        <h3 style="margin-top: 24px; display: none;" id="files-heading">Files</h3>
+        <div class="file-list" id="file-list"></div>
+    </div>
+    
+    <div class="editor-section">
+        <div class="glass-panel editor-container" style="padding: 0;">
+            <div class="action-bar">
+                <span id="current-file-label" style="font-weight: 600; color: var(--text-muted);">No file selected</span>
+                <div>
+                    <button id="save-btn" class="btn" style="background: rgba(255,255,255,0.1); color: white;" disabled>Save</button>
+                    <button id="run-btn" class="btn btn-accent" disabled>Run</button>
+                </div>
+            </div>
+            <textarea id="code-editor"></textarea>
+        </div>
+        
+        <div class="output-panel" id="console-output">
+            Terminal Output...
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: 'python',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true
+        });
+        
+        let currentProject = null;
+        let currentFile = null;
+        
+        // Handle new project
+        document.getElementById('new-project-btn').addEventListener('click', async () => {
+            const name = prompt('Enter project name:');
+            if (name) {
+                const res = await fetch('{{ url_for("projects.create_project") }}', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({name})
+                });
+                if (res.ok) {
+                    location.reload();
+                } else {
+                    alert('Error creating project');
+                }
+            }
+        });
+        
+        // Load files for a project
+        document.querySelectorAll('.project-item').forEach(el => {
+            el.addEventListener('click', async (e) => {
+                currentProject = e.target.dataset.project;
+                document.getElementById('files-heading').style.display = 'block';
+                
+                const res = await fetch(`{{ url_for("projects.list_files") }}?project=${currentProject}`);
+                const data = await res.json();
+                
+                const fileList = document.getElementById('file-list');
+                fileList.innerHTML = '';
+                
+                data.files.forEach(file => {
+                    const div = document.createElement('div');
+                    div.className = 'file-item';
+                    div.innerText = '📄 ' + file;
+                    div.addEventListener('click', () => loadFile(file));
+                    fileList.appendChild(div);
+                });
+            });
+        });
+        
+        async function loadFile(filename) {
+            currentFile = filename;
+            document.querySelectorAll('.file-item').forEach(el => el.classList.remove('active'));
+            // naive highlight
+            event.target.classList.add('active');
+            
+            document.getElementById('current-file-label').innerText = `${currentProject} / ${filename}`;
+            
+            const res = await fetch(`{{ url_for("projects.handle_file") }}?project=${currentProject}&filename=${filename}`);
+            const data = await res.json();
+            
+            editor.setValue(data.content);
+            document.getElementById('save-btn').disabled = false;
+            document.getElementById('run-btn').disabled = false;
+        }
+        
+        // Save file
+        document.getElementById('save-btn').addEventListener('click', async () => {
+            if (!currentProject || !currentFile) return;
+            const content = editor.getValue();
+            
+            const res = await fetch(`{{ url_for("projects.handle_file") }}?project=${currentProject}&filename=${currentFile}`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({content})
+            });
+            if (res.ok) {
+                alert('Saved!');
+            }
+        });
+        
+        // Run code
+        document.getElementById('run-btn').addEventListener('click', async () => {
+            const code = editor.getValue();
+            const consoleOutput = document.getElementById('console-output');
+            consoleOutput.innerText = 'Running...';
+            
+            try {
+                const res = await fetch('/api/execute', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({code})
+                });
+                const data = await res.json();
+                consoleOutput.innerText = (data.success ? data.stdout : data.stderr) || 'No output.';
+            } catch (err) {
+                consoleOutput.innerText = 'Error executing code';
+            }
+        });
+    });
+</script>
+{% endblock %}

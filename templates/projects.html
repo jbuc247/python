@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="projects-container">
+    <div class="welcome-banner glass-panel">
+        <h1>Project Library</h1>
+        <p>100 projects to build your Python skills, from beginner to advanced.</p>
+    </div>
+
+    <div class="filters glass-panel" style="margin-bottom: 24px; display: flex; gap: 16px;">
+        <input type="text" placeholder="Search projects..." style="padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); color: white; flex-grow: 1;">
+        <select style="padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); color: white;">
+            <option>All Difficulties</option>
+            <option>Beginner</option>
+            <option>Intermediate</option>
+            <option>Advanced</option>
+        </select>
+        <select style="padding: 8px; border-radius: 4px; background: rgba(0,0,0,0.2); border: 1px solid var(--panel-border); color: white;">
+            <option>All Categories</option>
+            <option>Games</option>
+            <option>Utilities</option>
+            <option>Data</option>
+            <option>Web</option>
+            <option>Automation</option>
+        </select>
+    </div>
+
+    <div class="grid-layout">
+        {% for project in projects %}
+        <div class="card glass-panel" style="position: relative;">
+            {% if project.completed %}
+            <div style="position: absolute; top: 12px; right: 12px; color: var(--accent-color);">✓ Completed</div>
+            {% endif %}
+            
+            <h3>{{ project.difficulty }} &bull; {{ project.category }}</h3>
+            <h2>{{ project.title }}</h2>
+            
+            {% if project.completed %}
+            <div class="stat-row" style="margin-bottom: 12px;">
+                <span>Score:</span>
+                <strong>{{ project.score }}/10</strong>
+            </div>
+            {% else %}
+            <p style="margin-bottom: 12px; color: var(--text-muted);">Not started</p>
+            {% endif %}
+            
+            <button class="btn btn-primary mt-3">View Project</button>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

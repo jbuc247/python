@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+{% block title %}Progress{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Your Progress</h2>
+  <p>XP: {{ user.xp }}</p>
+  <p>Level: {{ user.level }}</p>
+  <p>Streak: {{ user.streak }}</p>
+  <div class="progress-bar"><span style="width: 90%"></span></div>
+  <p>Python Fundamentals: 90%</p>
+  <div class="progress-bar"><span style="width: 55%"></span></div>
+  <p>Intermediate Python: 55%</p>
+</section>
+{% endblock %}

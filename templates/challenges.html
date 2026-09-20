@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Daily Challenges{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Daily Challenge</h2>
+  {% for challenge in challenges %}
+    <div class="lesson-item">
+      <h3>{{ challenge.title }}</h3>
+      <p><strong>Difficulty:</strong> {{ challenge.difficulty }}</p>
+      <p>{{ challenge.description }}</p>
+      <p><strong>Requirements:</strong></p>
+      <pre>{{ challenge.requirements }}</pre>
+      <p><strong>Hint:</strong> {{ challenge.hints }}</p>
+      <form method="post">
+        <textarea rows="10" name="solution"># Write your solution here</textarea>
+        <button type="submit" class="button">Submit</button>
+      </form>
+    </div>
+  {% endfor %}
+</section>
+{% endblock %}

@@ -1,0 +1,171 @@
+:root {
+  --bg: #0f172a;
+  --panel: #111827;
+  --panel-soft: #1f2937;
+  --text: #e5e7eb;
+  --muted: #9ca3af;
+  --accent: #3b82f6;
+  --success: #22c55e;
+  --danger: #ef4444;
+  --border: rgba(148, 163, 184, 0.22);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: linear-gradient(135deg, #020617, #111827 45%, #0f172a);
+  color: var(--text);
+}
+
+.app-shell {
+  display: flex;
+  min-height: 100vh;
+}
+
+.sidebar {
+  width: 260px;
+  background: rgba(15, 23, 42, 0.95);
+  border-right: 1px solid var(--border);
+  padding: 1.2rem;
+}
+
+.brand h1 {
+  font-size: 1.2rem;
+  margin-bottom: 1.5rem;
+}
+
+.sidebar nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.sidebar nav a {
+  color: var(--text);
+  text-decoration: none;
+  padding: 0.7rem 0.8rem;
+  border-radius: 10px;
+  background: rgba(148, 163, 184, 0.08);
+}
+
+.main-content {
+  flex: 1;
+  padding: 1.5rem;
+}
+
+.card {
+  background: rgba(17, 24, 39, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  padding: 1.2rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.25);
+}
+
+.hero {
+  background: linear-gradient(135deg, rgba(59,130,246,0.18), rgba(15,23,42,0.9));
+}
+
+.cards-grid,
+.project-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  gap: 1rem;
+}
+
+.mini-card,
+.project-card,
+.lesson-item {
+  background: rgba(31, 41, 55, 0.9);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 1rem;
+}
+
+.mini-card a,
+.button {
+  display: inline-block;
+  background: var(--accent);
+  color: white;
+  text-decoration: none;
+  border: none;
+  border-radius: 10px;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+}
+
+.progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(148, 163, 184, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin: 0.5rem 0;
+}
+
+.progress-bar span {
+  display: block;
+  height: 100%;
+  background: linear-gradient(90deg, var(--success), var(--accent));
+}
+
+input, textarea, select, button {
+  width: 100%;
+  margin-top: 0.5rem;
+  margin-bottom: 0.8rem;
+  padding: 0.8rem 0.9rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: rgba(15, 23, 42, 0.9);
+  color: var(--text);
+}
+
+textarea {
+  min-height: 120px;
+}
+
+.terminal-window {
+  background: #020617;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 1rem;
+  max-height: 300px;
+  overflow-y: auto;
+  margin-bottom: 1rem;
+}
+
+.terminal-line {
+  color: #7dd3fc;
+  margin-bottom: 0.3rem;
+}
+
+.terminal-output pre,
+.result-box pre {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+@media (max-width: 768px) {
+  .app-shell {
+    flex-direction: column;
+  }
+
+  .sidebar {
+    width: 100%;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .main-content {
+    padding: 1rem;
+  }
+
+  .cards-grid,
+  .project-grid {
+    grid-template-columns: 1fr;
+  }
+}

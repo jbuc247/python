@@ -1,0 +1,62 @@
+PROJECTS = [
+    {
+        "slug": "calculator",
+        "name": "Calculator",
+        "difficulty": "Beginner",
+        "category": "Utilities",
+        "description": "Build a simple command-line calculator with arithmetic operations.",
+        "skills": "Python basics, functions, input handling, loops",
+        "requirements": "Accept two numbers and an operator; display the result; handle invalid input.",
+        "learning_objectives": "Practice variables, control flow, and functions.",
+        "hints": "Use input() and if/elif.",
+        "test_cases": "3 + 2 = 5; 8 / 2 = 4; invalid operator should display a clear message.",
+        "extension_ideas": "Add square root, percentage, or advanced operations.",
+        "expected_behavior": "The program should run and produce accurate arithmetic answers.",
+        "solution": "def add(a, b):\n    return a + b\n\n# Complete the rest using input and operator selection."
+    },
+    {
+        "slug": "expense-tracker",
+        "name": "Expense Tracker",
+        "difficulty": "Intermediate",
+        "category": "Finance",
+        "description": "Track weekly expenses and calculate totals.",
+        "skills": "Lists, dictionaries, file handling, loops",
+        "requirements": "Add, view, and total expenses; save data to a file.",
+        "learning_objectives": "Create a small real-world app with storage and calculations.",
+        "hints": "Use a dictionary for each expense and a list to store them.",
+        "test_cases": "Add spending items and confirm totals update correctly.",
+        "extension_ideas": "Add categories and monthly reports.",
+        "expected_behavior": "The app should list expenses and show totals after each entry.",
+        "solution": "expenses = []\n# Add entries and sum totals as needed."
+    },
+    {
+        "slug": "todo-list",
+        "name": "To-Do List",
+        "difficulty": "Beginner",
+        "category": "Productivity",
+        "description": "Create a personal task manager.",
+        "skills": "Lists, loops, file handling",
+        "requirements": "Add tasks, mark complete, and show outstanding items.",
+        "learning_objectives": "Practice user interaction and state management.",
+        "hints": "Store tasks in a list and display a menu.",
+        "test_cases": "User can add and complete tasks.",
+        "extension_ideas": "Add priority levels and file persistence.",
+        "expected_behavior": "The task list updates after user actions.",
+        "solution": "tasks = []\n# Use a while loop to show menu choices."
+    },
+    {
+        "slug": "number-guessing-game",
+        "name": "Number Guessing Game",
+        "difficulty": "Beginner",
+        "category": "Games",
+        "description": "Guess the hidden number within a range.",
+        "skills": "Random numbers, loops, conditions",
+        "requirements": "Generate a secret random number and guide the player until they guess correctly.",
+        "learning_objectives": "Practice conditionals and loops.",
+        "hints": "Use random.randint() and a loop.",
+        "test_cases": "Too high, too low, and correct guesses are handled properly.",
+        "extension_ideas": "Add difficulty levels, score tracking, and a best score.",
+        "expected_behavior": "The game gives hints until the player wins.",
+        "solution": "import random\nsecret = random.randint(1, 10)"
+    }
+]

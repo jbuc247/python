@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+{% block title %}{{ lesson.title }}{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>{{ lesson.title }}</h2>
+  <div>{{ lesson.content|safe }}</div>
+  <form method="post">
+    <label for="exercise">Try this exercise:</label>
+    <textarea id="exercise" rows="8"># Write your code here
+# Example: create a variable named city and print it
+</textarea>
+    <button type="submit" class="button">Run Code</button>
+  </form>
+</section>
+{% endblock %}

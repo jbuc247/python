@@ -1,0 +1,183 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/dracula.min.css">
+<style>
+    .challenge-container {
+        display: flex;
+        flex-direction: column;
+        gap: 24px;
+        max-width: 900px;
+        margin: 0 auto;
+    }
+    .req-list {
+        list-style-position: inside;
+        margin-top: 12px;
+        color: var(--text-muted);
+    }
+    .req-list li {
+        margin-bottom: 8px;
+    }
+    .hints {
+        margin-top: 16px;
+        padding: 12px;
+        background: rgba(59, 130, 246, 0.1);
+        border-left: 4px solid var(--primary-color);
+        border-radius: 4px;
+    }
+    .editor-container {
+        border-radius: 8px;
+        overflow: hidden;
+        border: 1px solid var(--panel-border);
+    }
+    .CodeMirror {
+        height: 400px;
+        font-family: 'Fira Code', monospace, Courier, sans-serif;
+    }
+    .action-bar {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 16px;
+    }
+    .feedback-panel {
+        margin-top: 24px;
+        padding: 24px;
+        border-radius: 12px;
+        display: none;
+    }
+    .feedback-panel.success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 1px solid var(--accent-color);
+    }
+    .feedback-panel.error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid #ef4444;
+    }
+</style>
+
+<div class="challenge-container">
+    <div class="glass-panel">
+        <h3 class="text-muted">Today's Challenge</h3>
+        <h1 style="color: var(--primary-color);">{{ challenge.title }}</h1>
+        <p class="mt-3"><strong>Difficulty:</strong> <span class="badge">{{ challenge.difficulty }}</span> | <strong>Time:</strong> {{ challenge.estimated_time }}</p>
+        
+        <h3 class="mt-3">Requirements:</h3>
+        <ul class="req-list">
+            {% for req in challenge.requirements %}
+            <li>{{ req }}</li>
+            {% endfor %}
+        </ul>
+        
+        <div class="hints">
+            <strong>Hints:</strong>
+            <ul style="margin-top: 8px; margin-left: 20px;">
+                {% for hint in challenge.hints %}
+                <li>{{ hint }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+    
+    <div class="glass-panel">
+        <h3>Code Solution</h3>
+        <p class="text-muted mb-3">Write your implementation below.</p>
+        
+        <div class="editor-container">
+            <textarea id="code-editor">{{ challenge.starting_code }}</textarea>
+        </div>
+        
+        <div class="action-bar">
+            <div>
+                <button id="submit-btn" class="btn btn-accent">Submit Solution</button>
+            </div>
+            <div>
+                <button id="run-btn" class="btn btn-primary">Run Only</button>
+            </div>
+        </div>
+        
+        <div id="feedback" class="feedback-panel">
+            <h3 id="feedback-title"></h3>
+            <p id="feedback-score" style="margin-top: 8px; font-weight: 600;"></p>
+            <ul id="feedback-list" class="req-list" style="margin-top: 12px;"></ul>
+            
+            <h4 style="margin-top: 16px;">Console Output:</h4>
+            <pre id="console-output" style="background: rgba(0,0,0,0.3); padding: 12px; border-radius: 4px; margin-top: 8px; font-family: monospace;"></pre>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/python/python.min.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const editor = CodeMirror.fromTextArea(document.getElementById('code-editor'), {
+            mode: 'python',
+            theme: 'dracula',
+            lineNumbers: true,
+            indentUnit: 4,
+            matchBrackets: true
+        });
+        
+        const submitBtn = document.getElementById('submit-btn');
+        const runBtn = document.getElementById('run-btn');
+        const feedbackPanel = document.getElementById('feedback');
+        
+        async function submitCode(isFinalSubmit) {
+            const code = editor.getValue();
+            const btn = isFinalSubmit ? submitBtn : runBtn;
+            const originalText = btn.innerText;
+            
+            btn.disabled = true;
+            btn.innerText = 'Evaluating...';
+            
+            try {
+                // If it's a run only, we could use the /api/execute endpoint instead
+                const endpoint = isFinalSubmit ? '{{ url_for("challenges.submit_challenge") }}' : '/api/execute';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ code: code })
+                });
+                
+                const result = await response.json();
+                feedbackPanel.style.display = 'block';
+                
+                if (isFinalSubmit) {
+                    feedbackPanel.className = 'feedback-panel ' + (result.passed ? 'success' : 'error');
+                    document.getElementById('feedback-title').innerText = result.passed ? 'Challenge Complete!' : 'Needs Improvement';
+                    document.getElementById('feedback-score').innerText = `Score: ${result.score} / ${result.max_score}`;
+                    
+                    const feedbackList = document.getElementById('feedback-list');
+                    feedbackList.innerHTML = '';
+                    result.feedback.forEach(f => {
+                        const li = document.createElement('li');
+                        li.innerText = f;
+                        feedbackList.appendChild(li);
+                    });
+                    
+                    document.getElementById('console-output').innerText = result.execution_output || 'No output.';
+                } else {
+                    feedbackPanel.className = 'feedback-panel ' + (result.success ? 'success' : 'error');
+                    document.getElementById('feedback-title').innerText = 'Execution Result';
+                    document.getElementById('feedback-score').innerText = '';
+                    document.getElementById('feedback-list').innerHTML = '';
+                    document.getElementById('console-output').innerText = (result.success ? result.stdout : result.stderr) || 'No output.';
+                }
+            } catch (error) {
+                feedbackPanel.style.display = 'block';
+                feedbackPanel.className = 'feedback-panel error';
+                document.getElementById('feedback-title').innerText = 'Network Error';
+                document.getElementById('console-output').innerText = 'Failed to communicate with server.';
+            } finally {
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        }
+        
+        submitBtn.addEventListener('click', () => submitCode(true));
+        runBtn.addEventListener('click', () => submitCode(false));
+    });
+</script>
+{% endblock %}

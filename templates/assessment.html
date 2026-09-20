@@ -1,0 +1,20 @@
+{% extends 'base.html' %}
+{% block title %}Assessment{% endblock %}
+{% block content %}
+<section class="card">
+  <h2>Let's find out what you already know.</h2>
+  <form method="post">
+    {% for q in questions %}
+      <div class="question-box">
+        <label>{{ q }}</label><br>
+        <select name="{{ q }}">
+          <option value="yes">Yes</option>
+          <option value="no">No</option>
+          <option value="somewhat">Somewhat</option>
+        </select>
+      </div>
+    {% endfor %}
+    <button type="submit" class="button">Continue</button>
+  </form>
+</section>
+{% endblock %}
