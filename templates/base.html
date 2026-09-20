@@ -14,14 +14,14 @@
                 <h2>🐍 PyLab</h2>
             </div>
             <nav class="sidebar-nav">
-                <a href="{{ url_for('dashboard.index') }}" class="active">Dashboard</a>
-                <a href="#">Continue Learning</a>
-                <a href="#">Daily Challenge</a>
-                <a href="#">Quizzes</a>
-                <a href="#">Project Library</a>
-                <a href="#">My Projects</a>
-                <a href="#">Code Playground</a>
-                <a href="#">Terminal</a>
+                <a href="{{ url_for('dashboard.dashboard_home') }}">Dashboard</a>
+                <a href="{{ url_for('lessons.lesson_list') }}">Continue Learning</a>
+                <a href="{{ url_for('challenges.challenge_home') }}">Daily Challenge</a>
+                <a href="{{ url_for('quizzes.index') }}">Quizzes</a>
+                <a href="{{ url_for('projects.project_library') }}">Project Library</a>
+                <a href="{{ url_for('projects.workspace_home') }}">My Projects</a>
+                <a href="{{ url_for('terminal.terminal_home') }}">Terminal</a>
+                <a href="{{ url_for('mentor.mentor_home') }}">Mentor</a>
             </nav>
         </aside>
         
