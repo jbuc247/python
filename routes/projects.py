@@ -1,5 +1,5 @@
 import os
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, jsonify, url_for
 
 from config import USER_PROJECTS_DIR
 from database.database import get_connection
@@ -41,9 +41,10 @@ def project_detail(slug):
 @projects_bp.route("/workspace")
 def workspace_home():
     projects = []
-    if os.path.exists(USER_PROJECTS_DIR):
-        for name in sorted(os.listdir(USER_PROJECTS_DIR)):
-            path = os.path.join(USER_PROJECTS_DIR, name)
+    projects_dir = str(USER_PROJECTS_DIR)
+    if os.path.exists(projects_dir):
+        for name in sorted(os.listdir(projects_dir)):
+            path = os.path.join(projects_dir, name)
             if os.path.isdir(path):
                 projects.append({"name": name, "path": path})
     return render_template("workspace.html", projects=projects)
@@ -53,10 +54,43 @@ def workspace_home():
 def create_project():
     name = request.form.get("name", "").strip()
     if name:
-        project_dir = os.path.join(USER_PROJECTS_DIR, name)
+        project_dir = os.path.join(str(USER_PROJECTS_DIR), name)
         os.makedirs(project_dir, exist_ok=True)
         main_file = os.path.join(project_dir, "main.py")
         if not os.path.exists(main_file):
             with open(main_file, "w", encoding="utf-8") as f:
                 f.write("print('Hello from your project!')\n")
     return redirect(url_for("projects.workspace_home"))
+
+
+@projects_bp.route("/workspace/files")
+def list_files():
+    project = request.args.get("project", "")
+    project_dir = os.path.join(str(USER_PROJECTS_DIR), project)
+    files = []
+    if os.path.isdir(project_dir):
+        for item in os.listdir(project_dir):
+            if os.path.isfile(os.path.join(project_dir, item)):
+                files.append(item)
+    return jsonify({"files": files})
+
+
+@projects_bp.route("/workspace/file", methods=["GET", "POST"])
+def handle_file():
+    project = request.args.get("project", "")
+    filename = request.args.get("filename", "")
+    file_path = os.path.join(str(USER_PROJECTS_DIR), project, filename)
+
+    if request.method == "GET":
+        if not os.path.exists(file_path):
+            return jsonify({"error": "File not found"}), 404
+        with open(file_path, "r", encoding="utf-8") as f:
+            content = f.read()
+        return jsonify({"content": content})
+
+    elif request.method == "POST":
+        data = request.get_json()
+        content = data.get("content", "")
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(content)
+        return jsonify({"success": True})

@@ -16,9 +16,28 @@ def dashboard_home():
         challenge = conn.execute(
             "SELECT * FROM daily_challenges ORDER BY id LIMIT 1"
         ).fetchone()
+        projects_completed = conn.execute(
+            "SELECT COUNT(*) FROM project_attempts WHERE user_id = 1 AND status = 'completed'"
+        ).fetchone()[0]
+        projects_total = conn.execute("SELECT COUNT(*) FROM projects").fetchone()[0]
     finally:
         conn.close()
-    return render_template("dashboard.html", user=user, challenge=challenge)
+
+    # Derive a current course from user's topic or fall back
+    current_course = user.get("current_topic") or "Python Variables" if user else "Python Variables"
+    course_progress = 0
+
+    return render_template(
+        "dashboard.html",
+        user=user,
+        challenge=challenge,
+        current_course=current_course,
+        course_progress=course_progress,
+        todays_challenge=challenge["title"] if challenge else "No challenge today",
+        projects_completed=projects_completed,
+        projects_total=projects_total or 100,
+        quiz_average=0,
+    )
 
 
 @dashboard_bp.route("/assessment", methods=["GET", "POST"])
@@ -39,4 +58,3 @@ def assessment():
         "Do you understand classes?",
     ]
     return render_template("assessment.html", questions=questions)
-
